@@ -50,6 +50,55 @@ func runAttacker(o *os, document string, victimSleepsBeforeGenerateKey time.Dura
 		- find the one that matches
 		- do draw on it one more time
 	*/
+
+	interval := 1250 * time.Millisecond // Interval of 1.25 seconds
+	startTime := time.Now()             // Capture the start time
+	firstInterval := true
+
+	// go run pool.go pool_solution.go 1.5s
+
+	for {
+		// Check if the total duration has been reached
+		if time.Since(startTime) >= victimSleepsBeforeGenerateKey {
+			break // Exit the loop if the specified duration is reached
+		}
+
+		if firstInterval {
+			s0 := poolInitState
+			firstInterval = false
+
+			for i := 0; i < 1<<16; i++ {
+				var sample poolSample
+				sample[0] = byte(i >> 8)   // High byte
+				sample[1] = byte(i & 0xFF) // Low byte
+
+				s1 := poolAdd(s0, sample)
+				i_0 := prngInit(prngSeed(s1)) // this does the init part
+				i_1, a := prngDraw(i_0)
+
+				//guessedState, _ := prngDraw(initState) // this is the draw that we got from the sample // but how do i check if this matched? should i just save this? and then get to 1.25 and see if i have it?
+
+				//seedPrng := newPrng(prngSeed(guessedState))
+
+				//_, private := generateRsaKeyPair(seedPrng)
+
+				//signedDoc := private.sign([]byte(document))
+
+				return nil
+			}
+
+		}
+
+		// Perform the attack operations here
+
+		// Example: Attempt to guess the PRNG state or observe the side effects of the key generation
+		// This could involve drawing from the PRNG, attempting to generate a key pair, or other operations
+		// that would exploit the predictable state of the PRNG or timing information.
+
+		// Sleep for the interval
+		time.Sleep(interval)
+	}
+
 	s0 := poolInitState // get the initialstate of the entropy pool -- s0
 
 	// enumerate through all the r's
@@ -58,15 +107,18 @@ func runAttacker(o *os, document string, victimSleepsBeforeGenerateKey time.Dura
 		sample[0] = byte(i >> 8)   // High byte
 		sample[1] = byte(i & 0xFF) // Low byte
 
-		newState := poolAdd(s0, sample)
-		initState := prngInit(prngSeed(newState)) // this does the init part
+		//newState := poolAdd(s0, sample)
+		//initState := prngInit(prngSeed(newState)) // this does the init part
 
-		currentState, currentSample := prngDraw(initState) // this is the draw that we got from the sample // but how do i check if this matched? should i just save this? and then get to 1.25 and see if i have it?
+		//guessedState, _ := prngDraw(initState) // this is the draw that we got from the sample // but how do i check if this matched? should i just save this? and then get to 1.25 and see if i have it?
 
-		_, private := generateRsaKeyPair(correctDraw)
+		//seedPrng := newPrng(prngSeed(guessedState))
 
-		signedDoc := private.sign([]byte(document))
+		//_, private := generateRsaKeyPair(seedPrng)
 
-		return signedDoc
+		//signedDoc := private.sign([]byte(document))
+
+		return nil
 	}
+	return nil
 }
