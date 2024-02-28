@@ -33,7 +33,7 @@ func runAttacker(o *os, document string, victimSleepsBeforeGenerateKey time.Dura
 			break // Exit the loop if the specified duration is reached
 		}
 
-		os_draw := o.draw()
+		os_draw := o.draw() // draw once per intraval
 
 		for i := 0; i < 1<<16; i++ {
 			var canidate poolSample
@@ -42,10 +42,15 @@ func runAttacker(o *os, document string, victimSleepsBeforeGenerateKey time.Dura
 
 			s1 := poolAdd(s0, canidate)                              // do the add
 			currentState := prngInit(prngSeed(s1))                   // do the init
-			state_from_draw, guessedSample := prngDraw(currentState) // do the draw
+			state_from_draw, guessedSample := prngDraw(currentState) // do the draw for A -- this also gives the PRNGState of A
 			if os_draw == guessedSample {                            // check if the pnrg draw matches the os_draw
+
+				// here we need to store the state of the prng and use it for the next intreval
+
+				// we only sign the document after we have gone through all the intrevals
+
 				debugPrintf("I GOT THE CORRECT SAMPLE: [%x ]\n", guessedSample)
-				_, correctDraw = prngDraw(state_from_draw)
+				_, correctDraw = prngDraw(state_from_draw) // this does the second draw to get to V from A -- this also gives the PRNGState of V
 				prngGuess := newPrng(prngSeed(correctDraw))
 				_, priv_key := generateRsaKeyPair(&prngGuess) // generateRsaKeyPair
 				documentBytes := []byte(document)             // Convert document string to []byte
